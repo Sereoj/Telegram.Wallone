@@ -7,11 +7,11 @@ using Telegram.Wallone.Services.Loggings;
 
 namespace Telegram.Wallone.Exceptions
 {
-    internal class SettingsException : Exception
+    internal class JsonException : Exception
     {
-        public SettingsException(string message)
+        public JsonException(string message)
         {
-            ConsoleLogService.Send(message, Models.MessageType.Information, typeof(SettingsException));
+            LogService.Message(message, Models.MessageType.Error);
         }
     }
 }

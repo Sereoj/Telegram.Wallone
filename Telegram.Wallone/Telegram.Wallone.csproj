@@ -8,14 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Settings\App.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Controllers\Commands\" />
-    <Folder Include="Helpers\" />
     <Folder Include="Stubs\" />
-    <Folder Include="Settings\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Settings\App.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>
