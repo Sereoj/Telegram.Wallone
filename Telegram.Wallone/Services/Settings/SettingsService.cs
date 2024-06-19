@@ -6,6 +6,7 @@ using Telegram.Wallone.Interfaces;
 using Telegram.Wallone.Models;
 using Telegram.Wallone.Repositories;
 using Telegram.Wallone.Services.App;
+using Telegram.Wallone.Services.Loggings;
 using JsonException = Telegram.Wallone.Exceptions.JsonException;
 
 namespace Telegram.Wallone.Services.Settings
@@ -42,6 +43,7 @@ namespace Telegram.Wallone.Services.Settings
             if(settings != null)
             {
                 SettingsRepository.Set(settings);
+                ConsoleLogService.Send("Настройки загружены", Models.MessageType.Information, typeof(ISettings));
             }
             else
             {
@@ -51,6 +53,15 @@ namespace Telegram.Wallone.Services.Settings
         }
 
         public static ISettings GetSettings() => SettingsRepository.Get();
+
+        public static string GetToken()
+        {
+            if(GetSettings().Token == null)
+            {
+                throw new SettingsException("Token not loaded");
+            }
+            return GetSettings().Token;
+        }
 
         public static void SaveSettings(string file, ISettings settings)
         {

@@ -28,12 +28,22 @@ namespace Telegram.Wallone.Builders
             return this;
         }
 
+        internal SettingsBuilder ExistNCreateDirectory(string v)
+        {
+            var pathDirectory = AppService.GetPath(v);
+            if (!AppService.ExistDirectory(pathDirectory))
+            {
+                AppService.CreateDirectory(pathDirectory);
+            }
+            return this;
+        }
+
         internal SettingsBuilder CreateOrUpdateFile(string v)
         {
 
             SettingsService.Filename = v;
 
-            if (AppService.Exists(AppService.GetPath(v)))
+            if (AppService.ExistsFile(AppService.GetPath(v)))
             {
                 SettingsService.LoadSettingsFromFile();
             }
@@ -48,6 +58,11 @@ namespace Telegram.Wallone.Builders
         internal ISettings GetModel()
         {
             return SettingsRepository.Get();
+        }
+
+        internal bool IsLoggingEnabled()
+        {
+            return GetModel().IsLogging == true;
         }
     }
 }

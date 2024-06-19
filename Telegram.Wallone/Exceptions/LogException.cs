@@ -11,7 +11,7 @@ namespace Telegram.Wallone.Exceptions
     {
         public LogException(string message)
         {
-            LogService.Message(message, Models.MessageType.Error);
+            ConsoleLogService.Send(message, Models.MessageType.Error, typeof(LogException));
         }
     }
 }

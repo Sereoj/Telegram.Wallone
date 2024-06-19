@@ -20,7 +20,6 @@ namespace Telegram.Wallone.Builders
 
         public LogBuilder Create()
         {
-            LogRepository.Set(new Log());
             return this;
         }
     }

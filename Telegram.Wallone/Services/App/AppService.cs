@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Wallone.Extensions;
 
 namespace Telegram.Wallone.Services.App
 {
@@ -19,7 +20,24 @@ namespace Telegram.Wallone.Services.App
             return Path.Combine(GetLocalPath() , path);
         }
 
-        public static bool Exists(string path) => File.Exists(path);
-        
+        public static bool ExistsFile(string path)
+        {
+            return path.ExistsFile();
+        }
+
+        public static void CreateDirectory(string path)
+        {
+            path.CreateDirectory();
+        }
+
+        public static void RemoveDirectory(string path)
+        {
+            path.DeleteDirectory();
+        }
+
+        public static bool ExistDirectory(string path)
+        {
+            return path.ExistsDirectory();
+        }
     }
 }
