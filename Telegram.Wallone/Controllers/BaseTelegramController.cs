@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Wallone.Repositories;
+using Telegram.Wallone.Controllers.Commands;
+using Telegram.Wallone.Routes;
+using Telegram.Wallone.Services.Loggings;
 
 namespace Telegram.Wallone.Controllers
 {
     internal class BaseTelegramController
     {
-        public TelegramBotClient telegramBot { get; set; }
+        public ITelegramBotClient telegramBot { get; set; }
         protected CancellationTokenSource tokenSource { get; set; } = new CancellationTokenSource();
+
         public BaseTelegramController(TelegramBotClient telegramBotClient)
         {
             telegramBot = telegramBotClient;
@@ -31,37 +30,75 @@ namespace Telegram.Wallone.Controllers
                 receiverOptions: receiverOptions,
                 cancellationToken: tokenSource.Token
             );
-            Task.Run(() => HelloWorld());
             Console.ReadLine();
             tokenSource.Cancel();
-
-
-        }
-
-        public async Task HelloWorld()
-        {
-            var me = await telegramBot.GetMeAsync();
-            Console.WriteLine($"Start listening for @{me.Username}");
         }
 
         private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            // Only process Message updates: https://core.telegram.org/bots/api#message
-            if (update.Message is not { } message)
-                return;
-            // Only process text messages
+            try
+            {
+
+                var handler = update switch
+                {
+                    // UpdateType.Unknown:
+                    // UpdateType.ChannelPost:
+                    // UpdateType.EditedChannelPost:
+                    // UpdateType.ShippingQuery:
+                    // UpdateType.PreCheckoutQuery:
+                    // UpdateType.Poll:
+                    { Message: { } message } => BotOnMessageReceived(message, cancellationToken),
+                    { EditedMessage: { } message } => BotOnMessageReceived(message, cancellationToken),
+                    { CallbackQuery: { } callbackQuery } => HandleCallbackQueryReceived(callbackQuery, cancellationToken),
+                    _ => UnknownUpdateHandlerAsync(update, cancellationToken)
+                };
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception while handling {update.Type}: {ex}");
+            }
+        }
+
+        private async Task BotOnMessageReceived(Message message, CancellationToken cancellationToken)
+        {
             if (message.Text is not { } messageText)
                 return;
 
-            var chatId = message.Chat.Id;
+            var action = messageText.Split(' ')[0] switch
+            {
+                "/start" => BaseCommand.Start(telegramBot, message, cancellationToken),
+                "/auth" => BaseCommand.Auth(telegramBot, message, cancellationToken),
+                "/account" => BaseCommand.Account(telegramBot, message, cancellationToken),
+                "/events" => BaseCommand.Events(telegramBot, message, cancellationToken),
+                "/lang" => BaseCommand.Lang(telegramBot, message, cancellationToken),
+                _ => BaseCommand.Usage(telegramBot, message, cancellationToken)
+            };
 
-            Console.WriteLine($"Received a '{messageText}' message in chat {chatId}.");
+            Message sentMessage = await action;
+            ConsoleLogService.Send($"Пользователь: {message?.From?.Username} написал сообщение в {message?.Chat.Id}:{sentMessage.MessageId}", Models.MessageType.Information, this);
+        }
 
-            // Echo received message text
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "You said:\n" + messageText,
-                cancellationToken: cancellationToken);
+        private async Task HandleCallbackQueryReceived(CallbackQuery callbackQuery, CancellationToken cancellationToken)
+        {
+
+            switch (callbackQuery.Data)
+            {
+                case LangRoute.Russia:
+                    await telegramBot.AnswerCallbackQueryAsync(callbackQuery.Id, "Ваш выбор получен! Russia");
+                    break;
+                case LangRoute.English:
+                    await telegramBot.AnswerCallbackQueryAsync(callbackQuery.Id, $"Ваш выбор получен! English");
+                    break;
+                case AuthRoute.User:
+                    await telegramBot.AnswerCallbackQueryAsync(callbackQuery.Id, $"Пользователь авторизирован: User");
+                    break;
+            }
+        }
+        private Task UnknownUpdateHandlerAsync(Update update, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
 
         private Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
