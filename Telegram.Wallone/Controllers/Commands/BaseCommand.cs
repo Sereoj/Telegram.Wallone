@@ -3,18 +3,77 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Wallone.Routes;
+using Telegram.Wallone.Services;
 
 namespace Telegram.Wallone.Controllers.Commands
 {
-    internal class BaseCommand
+    public class BaseCommand
     {
-        internal static async Task<Message> Start(ITelegramBotClient telegramBot, Message message, CancellationToken cancellationToken)
+        public static LocalizationService _localizationService { get; set; }
+        public BaseCommand(LocalizationService localizationService)
         {
-            var messages =
-                $"Hello, {message?.From?.Username} 😀\n" +
-                $"Select a language!";
+            _localizationService = localizationService;
+        }
 
-            await telegramBot.SendChatActionAsync(
+        internal async Task<Message> Account(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        {
+            var messages = _localizationService.GetLocalizedString("greeting");
+
+            InlineKeyboardMarkup inlineKeyboard = new(
+                new[]
+                {
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData(text: "Посты", callbackData: AuthRoute.User),
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData(text: "Посты", callbackData: AuthRoute.User),
+                }
+                });
+
+            return await botClient.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                    text: messages,
+                    replyMarkup: inlineKeyboard,
+                    parseMode: ParseMode.Markdown,
+                    cancellationToken: cancellationToken);
+        }
+
+        internal async Task<Message> Auth(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        {
+            var messages = _localizationService.GetLocalizedString("greeting");
+
+            await botClient.SendChatActionAsync(
+                chatId: message.Chat.Id,
+                chatAction: ChatAction.Typing,
+                cancellationToken: cancellationToken);
+
+            await Task.Delay(500, cancellationToken);
+
+            InlineKeyboardMarkup inlineKeyboard = new(new[]
+            {
+                InlineKeyboardButton.WithCallbackData(text: "Проверить", callbackData: AuthRoute.User),
+            });
+
+            return await botClient.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                    text: messages,
+                    replyMarkup: inlineKeyboard,
+                    parseMode: ParseMode.Markdown,
+                    cancellationToken: cancellationToken);
+        }
+
+        internal async Task<Message> Event(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal async Task<Message> Lang(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        {
+            var messages = _localizationService.GetLocalizedString("select");
+
+            await botClient.SendChatActionAsync(
                     chatId: message.Chat.Id,
                     chatAction: ChatAction.Typing,
                     cancellationToken: cancellationToken);
@@ -28,7 +87,7 @@ namespace Telegram.Wallone.Controllers.Commands
 
                 });
 
-            return await telegramBot.SendTextMessageAsync(
+            return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
                     text: messages,
                     replyMarkup: inlineKeyboard,
@@ -36,29 +95,27 @@ namespace Telegram.Wallone.Controllers.Commands
                     cancellationToken: cancellationToken);
         }
 
-        internal static async Task<Message> Auth(ITelegramBotClient telegramBot, Message message, CancellationToken cancellationToken)
+        internal async Task<Message> Start(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
+            var messages =
+                $"Hello, {message?.From?.Username} 😀\n" +
+                $"Select a language!";
 
-
-            var messages = "Для того чтобы авторизоваться в Telegram боте, необходимо ввести идентификационный номер на нашем сайте.\nВаш код: CODE" +
-                "Перейдите по ссылке ниже: https://link.app/acttount/telegram \n" +
-                "И введите данный код.\n" +
-                "Внимание, данный код необходимо ввести только в телеграмм боту, никому не передайте его.";
-
-            await telegramBot.SendChatActionAsync(
-                chatId: message.Chat.Id,
-                chatAction: ChatAction.Typing,
-                cancellationToken: cancellationToken);
+            await botClient.SendChatActionAsync(
+                    chatId: message.Chat.Id,
+                    chatAction: ChatAction.Typing,
+                    cancellationToken: cancellationToken);
 
             await Task.Delay(500, cancellationToken);
 
             InlineKeyboardMarkup inlineKeyboard = new(new[]
-{
-                            InlineKeyboardButton.WithCallbackData(text: "Проверить", callbackData: AuthRoute.User),
+            {
+                            InlineKeyboardButton.WithCallbackData(text: "Русский", callbackData: LangRoute.Russia),
+                            InlineKeyboardButton.WithCallbackData(text: "English", callbackData: LangRoute.English),
 
-                });
+            });
 
-            return await telegramBot.SendTextMessageAsync(
+            return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
                     text: messages,
                     replyMarkup: inlineKeyboard,
@@ -66,22 +123,7 @@ namespace Telegram.Wallone.Controllers.Commands
                     cancellationToken: cancellationToken);
         }
 
-        internal static async Task<Message> Account(ITelegramBotClient telegramBot, Message message, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static async Task<Message> Events(ITelegramBotClient telegramBot, Message message, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static async Task<Message> Lang(ITelegramBotClient telegramBot, Message message, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static async Task<Message> Usage(ITelegramBotClient telegramBot, Message message, CancellationToken cancellationToken)
+        internal async Task<Message> Usage(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
