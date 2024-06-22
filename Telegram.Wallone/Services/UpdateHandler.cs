@@ -119,10 +119,7 @@ namespace Telegram.Wallone.Services
         {
             _logger.LogInformation("Received inline result: {ChosenInlineResultId}", chosenInlineResult.ResultId);
 
-            await _botClient.SendTextMessageAsync(
-                chatId: chosenInlineResult.From.Id,
-                text: $"You chose result with Id: {chosenInlineResult.ResultId}",
-                cancellationToken: cancellationToken);
+            await Task.CompletedTask;
         }
 
         private Task UnknownUpdateHandlerAsync(Update update, CancellationToken cancellationToken)

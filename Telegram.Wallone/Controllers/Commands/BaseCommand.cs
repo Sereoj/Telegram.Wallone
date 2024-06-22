@@ -14,22 +14,38 @@ namespace Telegram.Wallone.Controllers.Commands
         {
             _localizationService = localizationService;
         }
+        protected string getLanguage(string code)
+        {
+            return _localizationService.GetLocalizedString(code);
+        }
 
+        protected InlineKeyboardMarkup getKeyboardButtonLanguage()
+        {
+            return new(new[]
+            {
+                InlineKeyboardButton.WithCallbackData(text: getLanguage("language.russia"), callbackData: LangRoute.Russia),
+                InlineKeyboardButton.WithCallbackData(text: getLanguage("language.english"), callbackData: LangRoute.English),
+            });
+        }
         internal async Task<Message> Account(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages = _localizationService.GetLocalizedString("greeting");
+            var messages = message?.From?.Username + "\t" + getLanguage("account");
 
             InlineKeyboardMarkup inlineKeyboard = new(
                 new[]
                 {
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData(text: "Посты", callbackData: AuthRoute.User),
-                },
-                new[]
-                {
-                    InlineKeyboardButton.WithCallbackData(text: "Посты", callbackData: AuthRoute.User),
-                }
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData(text: getLanguage("account.popular_images"), callbackData: AuthRoute.User),
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData(text: getLanguage("account.recently_purchased_images"), callbackData: AuthRoute.User),
+                    },
+                    new[]
+                    {
+                        InlineKeyboardButton.WithCallbackData(text: getLanguage("account.balance"), callbackData: AuthRoute.User),
+                    }
                 });
 
             return await botClient.SendTextMessageAsync(
@@ -42,7 +58,7 @@ namespace Telegram.Wallone.Controllers.Commands
 
         internal async Task<Message> Auth(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages = _localizationService.GetLocalizedString("greeting");
+            var messages = getLanguage("auth");
 
             await botClient.SendChatActionAsync(
                 chatId: message.Chat.Id,
@@ -53,7 +69,7 @@ namespace Telegram.Wallone.Controllers.Commands
 
             InlineKeyboardMarkup inlineKeyboard = new(new[]
             {
-                InlineKeyboardButton.WithCallbackData(text: "Проверить", callbackData: AuthRoute.User),
+                InlineKeyboardButton.WithCallbackData(text: getLanguage("auth.check"), callbackData: AuthRoute.User),
             });
 
             return await botClient.SendTextMessageAsync(
@@ -71,21 +87,10 @@ namespace Telegram.Wallone.Controllers.Commands
 
         internal async Task<Message> Lang(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages = _localizationService.GetLocalizedString("select");
+            var messages = getLanguage("language");
 
-            await botClient.SendChatActionAsync(
-                    chatId: message.Chat.Id,
-                    chatAction: ChatAction.Typing,
-                    cancellationToken: cancellationToken);
-
-            await Task.Delay(500, cancellationToken);
-
-            InlineKeyboardMarkup inlineKeyboard = new(new[]
-            {
-                            InlineKeyboardButton.WithCallbackData(text: "Русский", callbackData: LangRoute.Russia),
-                            InlineKeyboardButton.WithCallbackData(text: "English", callbackData: LangRoute.English),
-
-                });
+            await sendChatActionAsync(botClient, message, cancellationToken);
+            InlineKeyboardMarkup inlineKeyboard = getKeyboardButtonLanguage();
 
             return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
@@ -97,23 +102,11 @@ namespace Telegram.Wallone.Controllers.Commands
 
         internal async Task<Message> Start(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages =
-                $"Hello, {message?.From?.Username} 😀\n" +
-                $"Select a language!";
+            var messages = getLanguage("start");
 
-            await botClient.SendChatActionAsync(
-                    chatId: message.Chat.Id,
-                    chatAction: ChatAction.Typing,
-                    cancellationToken: cancellationToken);
 
-            await Task.Delay(500, cancellationToken);
-
-            InlineKeyboardMarkup inlineKeyboard = new(new[]
-            {
-                            InlineKeyboardButton.WithCallbackData(text: "Русский", callbackData: LangRoute.Russia),
-                            InlineKeyboardButton.WithCallbackData(text: "English", callbackData: LangRoute.English),
-
-            });
+            await sendChatActionAsync(botClient, message, cancellationToken);
+            InlineKeyboardMarkup inlineKeyboard = getKeyboardButtonLanguage();
 
             return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
@@ -125,7 +118,23 @@ namespace Telegram.Wallone.Controllers.Commands
 
         internal async Task<Message> Usage(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var messages = "@username";
+
+            return await botClient.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                    text: messages,
+                    parseMode: ParseMode.Markdown,
+                    cancellationToken: cancellationToken);
+        }
+
+        private static async Task sendChatActionAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        {
+            await botClient.SendChatActionAsync(
+                    chatId: message.Chat.Id,
+                    chatAction: ChatAction.Typing,
+                    cancellationToken: cancellationToken);
+
+            await Task.Delay(500, cancellationToken);
         }
     }
 }
