@@ -63,6 +63,7 @@ namespace Telegram.Wallone.Services
 
             if (messageText.Contains("/auth") && messageText.Contains(":"))
             {
+                await _baseCommand.AuthorizeUser(_botClient, message, cancellationToken);
                 return;
             }
 

@@ -105,7 +105,16 @@ namespace Telegram.Wallone.Controllers.Commands
                     parseMode: ParseMode.Markdown,
                     cancellationToken: cancellationToken);
         }
+        internal async Task<Message> AuthorizeUser(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        {
+            var messages = "Авторизировались";
 
+            return await botClient.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                    text: messages,
+                    parseMode: ParseMode.Markdown,
+                    cancellationToken: cancellationToken);
+        }
         internal async Task<Message> Usage(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
             var messages = "[@username](@username)";
