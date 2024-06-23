@@ -1,4 +1,7 @@
-﻿namespace Telegram.Wallone.Services
+﻿using static System.Collections.Specialized.BitVector32;
+using Telegram.Bot.Types;
+
+namespace Telegram.Wallone.Services
 {
     public class LocalizationService
     {
@@ -16,20 +19,37 @@
                     ["wellcome"] = "Hello, I'm Lona! I am very cute and pretty, " +
                     "I will notify you about the purchased images by users, " +
                     "as well as help you with many questions ;)",
-                    
-                    ["auth"] = "So, let's log in with you to use your personal account." +
-                    "Click on the link and copy the data in the **user:key format**\n" +
-                    "And send a message in the format:\n**/auth user:key**\n\n" +
-                    "Attention beware of scammers, be sure to check the address of the bot @wallone_bot\n\n" +
+
+                    ["auth"] = "So, let's log in with you to use your personal account.\n" +
+                    "Click on the link and copy the data in the user:key format\n\n" +
+                    "And send a message in the format:\n `/auth user:key`\n\n" +
+                    "Attention beware of scammers, be sure to check the address of the bot [@wallone_bot](@wallone_bot)\n\n" +
                     "In no case, do not show or give the key to third parties.",
                     ["auth.check"] = "Check",
-                    
+                    ["auth.true"] = "The user is logged in",
+
                     ["for_new_users"] = "I have prepared a gift for you, click \"pick up\"",
                     
-                    ["account"] = ", my friend, all the necessary information about your account is displayed here.\n\nUsername: [username]\nVerification:false\n\n__Posts:__\nPublished: 100\nOn moderation: 9\n",
+                    ["account"] =
+                    "Welcome, ***username*** 🌟! You are here again to shine your light and delight us with your smiles.\n\n" +
+                    "[Profile](https://link.app/users/username )\n" +
+                    "├ Username: ***username***\n" +
+                    "├ Tariff: Lite\n" +
+                    "├ Role: User\n" +
+                    "└ Balance: 100 tokens\n\n" +
+                    "🏞 Posts:\n" +
+                    "├ Total: ***109*** \n" +
+                    "├ Published: ***100*** \n" +
+                    "├ On moderation: ***9*** \n" +
+                    "└ Rejected: ***0*** \n\n" +
+                    "📋 Useful:\n" +
+                    "├ News\n" +
+                    "├ Telegram channel\n" +
+                    "├ VK Group\n" +
+                    "├ Help Department\n" +
+                    "└ Publication rules",
                     ["account.popular_images"] = "Popular Images",
                     ["account.recently_purchased_images"] = "Recently purchased images",
-                    ["account.balance"] = "Balance",
                     
                     ["greeting"] = "Hello!",
 
@@ -47,19 +67,35 @@
                     "буду оповещать тебя о купленных изображениях пользователями, " +
                     "а так же помогу тебе в многих вопросах ;)",
                     
-                    ["auth"] = "Итак, давай с тобой авторизируйся, чтобы воспользоваться личным кабинетом. " +
-                    "Перейди по ссылке и скопируй данные в формате **user:key**\n" +
-                    "И отправь сообщение в формате:\n**/auth user:key**\n\n" +
-                    "Внимание остерегайся мошенников, обязательно проверь адрес бота @wallone_bot\n\n" + 
+                    ["auth"] = "Итак, давай с тобой авторизируйся, чтобы воспользоваться личным кабинетом.\n" +
+                    "Перейди по ссылке и скопируй данные в формате user:key\n\n" +
+                    "И отправь сообщение в формате:\n `/auth user:key` \n\n" +
+                    "Внимание остерегайся мошенников, обязательно проверь адрес бота [@wallone_bot](@wallone_bot)\n\n" + 
                     "Ни в коем случае, не показывай и не давай ключ третьим лицам.",
                     ["auth.check"] = "Проверить",
+                    ["auth.true"] = "Пользователь авторизирован",
                     
                     ["for_new_users"] = "Я подготовила тебе подарок, нажми \"забрать\"",
                     
-                    ["account"] = ", мой друг, здесь отображается вся необходимая информация о твоем аккаунте.\n\nИмя пользователя: [username]\nВерификация:false\n\n__Посты:__\nОпубликованные: 100\nНа модерации: 9\n",
+                    ["account"] = "Добро пожаловать, username 🌟! Вы снова здесь, чтобы сиять своим светом и радовать нас своими улыбками.\n\n" +
+                    "[Профиль](https://link.app/users/username)\n" +
+                    "├ Имя пользователя: ***username***\n" +
+                    "├ Тариф: Lite\n" +
+                    "├ Роль: Пользователь\n" +
+                    "└ Баланс: 100 токенов\n\n" +
+                    "🏞 Постов:\n" +
+                    "├ Всего: ***109*** \n" +
+                    "├ Опубликованные: ***100***\n" +
+                    "├ На модерации: ***9*** \n" +
+                    "└ Отклоненные: ***0***\n\n" +
+                    "📋 Полезное:\n" +
+                    "├ Новости\n" +
+                    "├ Телеграмм канал\n" +
+                    "├ Группа ВК\n" +
+                    "├ Отдел помощи\n" +
+                    "└ Правила публикации",
                     ["account.popular_images"] = "Популярные изображения",
                     ["account.recently_purchased_images"] = "Недавно купленные изображения",
-                    ["account.balance"] = "Баланс",
 
                     ["select"] = "Выберите язык:",
                     ["language.english"] = "English",

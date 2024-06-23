@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Telegram.Bot;
 using Telegram.Wallone.Controllers.Commands;
+using Telegram.Wallone.Helpers;
 using Telegram.Wallone.Services;
 
 
@@ -27,7 +28,9 @@ IHost host = Host.CreateDefaultBuilder(args)
                         throw;
                     }
                 });
+        
         services.AddScoped<LocalizationService>();
+        services.AddScoped<LangHelper>();
         services.AddScoped<BaseCommand>();
         services.AddScoped<UpdateHandler>();
         services.AddScoped<ReceiverService>();

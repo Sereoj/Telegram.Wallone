@@ -61,6 +61,11 @@ namespace Telegram.Wallone.Services
             if (message.Text is not { } messageText)
                 return;
 
+            if (messageText.Contains("/auth") && messageText.Contains(":"))
+            {
+                return;
+            }
+
             var action = messageText.Split(' ')[0] switch
             {
                 "/start" => _baseCommand.Start(_botClient, message, cancellationToken),
@@ -70,6 +75,7 @@ namespace Telegram.Wallone.Services
                 "/lang" => _baseCommand.Lang(_botClient, message, cancellationToken),
                 _ => _baseCommand.Usage(_botClient, message, cancellationToken)
             };
+
             Message sentMessage = await action;
             _logger.LogInformation($"Пользователь: {message?.From?.Username} написал сообщение в {message?.Chat.Id}:{sentMessage.MessageId}");
         }
@@ -77,18 +83,32 @@ namespace Telegram.Wallone.Services
 
         private async Task BotOnCallbackQueryReceived(CallbackQuery callbackQuery, CancellationToken cancellationToken)
         {
+            var message = callbackQuery.Message;
+
             switch (callbackQuery.Data)
             {
                 case LangRoute.Russia:
                     _localizationService.setLocale("ru");
                     await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, _localizationService.GetLocalizedString("choice"));
+                    await _baseCommand.Auth(_botClient, message, cancellationToken);
                     break;
                 case LangRoute.English:
                     _localizationService.setLocale("en");
                     await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, _localizationService.GetLocalizedString("choice"));
+                    await _baseCommand.Auth(_botClient, message, cancellationToken);
                     break;
                 case AuthRoute.User:
                     await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Пользователь авторизирован: User");
+                    await _baseCommand.Account(_botClient, message, cancellationToken);
+                    break;
+                case AccountRoute.PopularImages:
+                    break;
+                case AccountRoute.RecentlyPurchasedImages:
+                    break;
+                case AccountRoute.Balance:
+                    break;
+                default:
+                    await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Пофиг мне на говнокод");
                     break;
             }
         }

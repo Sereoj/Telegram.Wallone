@@ -2,6 +2,7 @@
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Wallone.Helpers;
 using Telegram.Wallone.Routes;
 using Telegram.Wallone.Services;
 
@@ -9,42 +10,36 @@ namespace Telegram.Wallone.Controllers.Commands
 {
     public class BaseCommand
     {
+        private LangHelper _langHelper;
         public static LocalizationService _localizationService { get; set; }
-        public BaseCommand(LocalizationService localizationService)
+        public BaseCommand(LocalizationService localizationService, LangHelper langHelper)
         {
+            _langHelper = langHelper;
             _localizationService = localizationService;
-        }
-        protected string getLanguage(string code)
-        {
-            return _localizationService.GetLocalizedString(code);
         }
 
         protected InlineKeyboardMarkup getKeyboardButtonLanguage()
         {
             return new(new[]
             {
-                InlineKeyboardButton.WithCallbackData(text: getLanguage("language.russia"), callbackData: LangRoute.Russia),
-                InlineKeyboardButton.WithCallbackData(text: getLanguage("language.english"), callbackData: LangRoute.English),
+                InlineKeyboardButton.WithCallbackData(text: _langHelper.getLanguage("language.russia"), callbackData: LangRoute.Russia),
+                InlineKeyboardButton.WithCallbackData(text:  _langHelper.getLanguage("language.english"), callbackData: LangRoute.English),
             });
         }
         internal async Task<Message> Account(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages = message?.From?.Username + "\t" + getLanguage("account");
+            var messages = _langHelper.getLanguage("account");
 
             InlineKeyboardMarkup inlineKeyboard = new(
                 new[]
                 {
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData(text: getLanguage("account.popular_images"), callbackData: AuthRoute.User),
+                        InlineKeyboardButton.WithCallbackData(text:  _langHelper.getLanguage("account.popular_images"), callbackData: AccountRoute.PopularImages),
                     },
                     new[]
                     {
-                        InlineKeyboardButton.WithCallbackData(text: getLanguage("account.recently_purchased_images"), callbackData: AuthRoute.User),
-                    },
-                    new[]
-                    {
-                        InlineKeyboardButton.WithCallbackData(text: getLanguage("account.balance"), callbackData: AuthRoute.User),
+                        InlineKeyboardButton.WithCallbackData(text:  _langHelper.getLanguage("account.recently_purchased_images"), callbackData: AccountRoute.Balance),
                     }
                 });
 
@@ -58,18 +53,13 @@ namespace Telegram.Wallone.Controllers.Commands
 
         internal async Task<Message> Auth(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages = getLanguage("auth");
+            var messages = _langHelper.getLanguage("auth");
 
-            await botClient.SendChatActionAsync(
-                chatId: message.Chat.Id,
-                chatAction: ChatAction.Typing,
-                cancellationToken: cancellationToken);
-
-            await Task.Delay(500, cancellationToken);
+            await sendChatActionAsync(botClient, message, cancellationToken);
 
             InlineKeyboardMarkup inlineKeyboard = new(new[]
             {
-                InlineKeyboardButton.WithCallbackData(text: getLanguage("auth.check"), callbackData: AuthRoute.User),
+                InlineKeyboardButton.WithCallbackData(text:  _langHelper.getLanguage("auth.check"), callbackData: AuthRoute.User),
             });
 
             return await botClient.SendTextMessageAsync(
@@ -87,7 +77,7 @@ namespace Telegram.Wallone.Controllers.Commands
 
         internal async Task<Message> Lang(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages = getLanguage("language");
+            var messages = _langHelper.getLanguage("language");
 
             await sendChatActionAsync(botClient, message, cancellationToken);
             InlineKeyboardMarkup inlineKeyboard = getKeyboardButtonLanguage();
@@ -102,7 +92,7 @@ namespace Telegram.Wallone.Controllers.Commands
 
         internal async Task<Message> Start(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages = getLanguage("start");
+            var messages = _langHelper.getLanguage("start");
 
 
             await sendChatActionAsync(botClient, message, cancellationToken);
@@ -118,7 +108,7 @@ namespace Telegram.Wallone.Controllers.Commands
 
         internal async Task<Message> Usage(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
-            var messages = "@username";
+            var messages = "[@username](@username)";
 
             return await botClient.SendTextMessageAsync(
                     chatId: message.Chat.Id,
