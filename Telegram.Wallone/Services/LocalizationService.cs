@@ -1,5 +1,4 @@
-﻿using static System.Collections.Specialized.BitVector32;
-using Telegram.Bot.Types;
+﻿using Telegram.Wallone.Routes;
 
 namespace Telegram.Wallone.Services
 {
@@ -23,10 +22,15 @@ namespace Telegram.Wallone.Services
                     ["auth"] = "So, let's log in with you to use your personal account.\n" +
                     "Click on the link and copy the data in the user:key format\n\n" +
                     "And send a message in the format:\n `/auth user:key`\n\n" +
-                    "Attention beware of scammers, be sure to check the address of the bot [@wallone_bot](@wallone_bot)\n\n" +
+                    $"Attention beware of scammers, be sure to check the address of the bot [{LinkRoute.LinkBot}]({LinkRoute.LinkBot})\n\n" +
                     "In no case, do not show or give the key to third parties.",
                     ["auth.check"] = "Check",
                     ["auth.true"] = "The user is logged in",
+
+                    ["subs_group"] = $"💬 [Subscribe to our channel]({LinkRoute.InviteLinkGroup})," +
+                    $"to keep up to date with new updates and other news related to [Wallone]({LinkRoute.SiteLink}).",
+                    ["subs_group.sub"] = "Subscribe to the channel",
+                    ["subs_group.check"] = "Check",
 
                     ["for_new_users"] = "I have prepared a gift for you, click \"pick up\"",
                     
@@ -70,11 +74,16 @@ namespace Telegram.Wallone.Services
                     ["auth"] = "Итак, давай с тобой авторизируйся, чтобы воспользоваться личным кабинетом.\n" +
                     "Перейди по ссылке и скопируй данные в формате user:key\n\n" +
                     "И отправь сообщение в формате:\n `/auth user:key` \n\n" +
-                    "Внимание остерегайся мошенников, обязательно проверь адрес бота [@wallone_bot](@wallone_bot)\n\n" + 
+                    $"Внимание остерегайся мошенников, обязательно проверь адрес бота [{LinkRoute.LinkBot}]({LinkRoute.LinkBot})\n\n" + 
                     "Ни в коем случае, не показывай и не давай ключ третьим лицам.",
                     ["auth.check"] = "Проверить",
                     ["auth.true"] = "Пользователь авторизирован",
-                    
+
+                    ["subs_group"] = $"💬 [Подпишитесь на наш канал]({LinkRoute.InviteLinkGroup})," +
+                    $"чтобы быть в курсе новых обновлений и других новостей, связанных с [Wallone]({LinkRoute.SiteLink}).",
+                    ["subs_group.sub"] = "Подписаться на канал",
+                    ["subs_group.check"] = "Проверить",
+
                     ["for_new_users"] = "Я подготовила тебе подарок, нажми \"забрать\"",
                     
                     ["account"] = "Добро пожаловать, username 🌟! Вы снова здесь, чтобы сиять своим светом и радовать нас своими улыбками.\n\n" +

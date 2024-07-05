@@ -71,6 +71,7 @@ namespace Telegram.Wallone.Services
             {
                 "/start" => _baseCommand.Start(_botClient, message, cancellationToken),
                 "/auth" => _baseCommand.Auth(_botClient, message, cancellationToken),
+                "/subs" => _baseCommand.Subs(_botClient, message, cancellationToken),
                 "/account" => _baseCommand.Account(_botClient, message, cancellationToken),
                 "/events" => _baseCommand.Event(_botClient, message, cancellationToken),
                 "/lang" => _baseCommand.Lang(_botClient, message, cancellationToken),
@@ -90,17 +91,21 @@ namespace Telegram.Wallone.Services
             {
                 case LangRoute.Russia:
                     _localizationService.setLocale("ru");
-                    await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, _localizationService.GetLocalizedString("choice"));
                     await _baseCommand.Auth(_botClient, message, cancellationToken);
+                    await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
                     break;
                 case LangRoute.English:
                     _localizationService.setLocale("en");
-                    await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, _localizationService.GetLocalizedString("choice"));
                     await _baseCommand.Auth(_botClient, message, cancellationToken);
+                    await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
                     break;
                 case AuthRoute.User:
-                    await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"Пользователь авторизирован: User");
+                    await _baseCommand.Subs(_botClient, message, cancellationToken);
+                    await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
+                    break;
+                case AccountRoute.SubsGroupCheck:
                     await _baseCommand.Account(_botClient, message, cancellationToken);
+                    await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
                     break;
                 case AccountRoute.PopularImages:
                     break;

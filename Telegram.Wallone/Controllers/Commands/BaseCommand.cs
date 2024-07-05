@@ -26,6 +26,33 @@ namespace Telegram.Wallone.Controllers.Commands
                 InlineKeyboardButton.WithCallbackData(text:  _langHelper.getLanguage("language.english"), callbackData: LangRoute.English),
             });
         }
+        internal async Task<Message> Subs(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+        {
+            var messages = _langHelper.getLanguage("subs_group");
+
+            await sendChatActionAsync(botClient, message, cancellationToken);
+
+            InlineKeyboardMarkup inlineKeyboard = new(new[]
+            {
+                new[]
+                {
+                    InlineKeyboardButton.WithUrl(text:  _langHelper.getLanguage("subs_group.sub"), LinkRoute.InviteLinkGroup)
+                },
+                new[]
+                {
+                    InlineKeyboardButton.WithCallbackData(text:  _langHelper.getLanguage("subs_group.check"), callbackData: AccountRoute.SubsGroupCheck)
+                }
+            });
+
+            return await botClient.SendTextMessageAsync(
+                    chatId: message.Chat.Id,
+                    text: messages,
+                    replyMarkup: inlineKeyboard,
+                    parseMode: ParseMode.Markdown,
+                    protectContent: true,
+                    cancellationToken: cancellationToken);
+        }
+
         internal async Task<Message> Account(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
         {
             var messages = _langHelper.getLanguage("account");
@@ -48,6 +75,7 @@ namespace Telegram.Wallone.Controllers.Commands
                     text: messages,
                     replyMarkup: inlineKeyboard,
                     parseMode: ParseMode.Markdown,
+                    protectContent: true,
                     cancellationToken: cancellationToken);
         }
 
