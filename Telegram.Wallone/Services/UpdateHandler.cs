@@ -4,8 +4,14 @@ using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InlineQueryResults;
-using Telegram.Wallone.Controllers.Commands;
+using Telegram.Wallone.Controllers.Commands.Account;
+using Telegram.Wallone.Controllers.Commands.Authorization;
+using Telegram.Wallone.Controllers.Commands.Base;
+using Telegram.Wallone.Controllers.Commands.Factory;
+using Telegram.Wallone.Controllers.Commands.Subscribe;
 using Telegram.Wallone.Routes;
+using Telegram.Wallone.Utilities;
+using Telegram.Wallone.Validators;
 
 namespace Telegram.Wallone.Services
 {
@@ -13,15 +19,21 @@ namespace Telegram.Wallone.Services
     {
         private readonly ITelegramBotClient _botClient;
         private readonly ILogger<UpdateHandler> _logger;
-        private readonly LocalizationService _localizationService;
-        private readonly BaseCommand _baseCommand;
+        private readonly CommandFactory _commandFactory;
+        private readonly LocalizationService localizationService;
+        private readonly AuthorizationCommand _authorizationCommand;
+        private readonly AccountCommand _accountCommand;
+        private readonly SubscribeCommand _subsCommand;
 
-        public UpdateHandler(ITelegramBotClient botClient, ILogger<UpdateHandler> logger, LocalizationService localizationService, BaseCommand baseCommand)
+        public UpdateHandler(ITelegramBotClient botClient, ILogger<UpdateHandler> logger, CommandFactory commandFactory, LocalizationService localizationService)
         {
             _botClient = botClient;
             _logger = logger;
-            _localizationService = localizationService;
-            _baseCommand = baseCommand;
+            _commandFactory = commandFactory;
+            this.localizationService = localizationService;
+            _authorizationCommand = (AuthorizationCommand)_commandFactory.CreateCommand("/auth");
+            _accountCommand = (AccountCommand)_commandFactory.CreateCommand("/account");
+            _subsCommand = (SubscribeCommand)_commandFactory.CreateCommand("/subs");
         }
 
         public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -57,29 +69,29 @@ namespace Telegram.Wallone.Services
 
         private async Task BotOnMessageReceived(Message message, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Тип полученного сообщения: {MessageType}", message.Type);
+            _logger.LogInformation($"Тип полученного сообщения: {0}", message.Type);
             if (message.Text is not { } messageText)
                 return;
 
-            if (messageText.Contains("/auth") && messageText.Contains(":"))
+            try
             {
-                await _baseCommand.AuthorizeUser(_botClient, message, cancellationToken);
-                return;
+                if (TokenValidator.Validation(messageText))
+                {
+                    await _authorizationCommand.AuthorizeMessage(_botClient, message, cancellationToken);
+                    return;
+                }
+
+                var commandKey = messageText.Split(' ')[0];
+                ICommand command = _commandFactory.CreateCommand(commandKey);
+
+                Message sentMessage = await command.ExecuteAsync(message, cancellationToken);
+                _logger.LogInformation($"Пользователь: {message?.From?.Username} написал сообщение в {message?.Chat.Id}:{sentMessage.MessageId}");
             }
-
-            var action = messageText.Split(' ')[0] switch
+            catch (Exception ex)
             {
-                "/start" => _baseCommand.Start(_botClient, message, cancellationToken),
-                "/auth" => _baseCommand.Auth(_botClient, message, cancellationToken),
-                "/subs" => _baseCommand.Subs(_botClient, message, cancellationToken),
-                "/account" => _baseCommand.Account(_botClient, message, cancellationToken),
-                "/events" => _baseCommand.Event(_botClient, message, cancellationToken),
-                "/lang" => _baseCommand.Lang(_botClient, message, cancellationToken),
-                _ => _baseCommand.Usage(_botClient, message, cancellationToken)
-            };
-
-            Message sentMessage = await action;
-            _logger.LogInformation($"Пользователь: {message?.From?.Username} написал сообщение в {message?.Chat.Id}:{sentMessage.MessageId}");
+                _logger.LogError(ex, "Error processing message: {MessageText}", messageText);
+                // Обработка исключения или уведомление пользователя
+            }
         }
 
 
@@ -90,22 +102,23 @@ namespace Telegram.Wallone.Services
             switch (callbackQuery.Data)
             {
                 case LangRoute.Russia:
-                    _localizationService.setLocale("ru");
-                    await _baseCommand.Auth(_botClient, message, cancellationToken);
-                    await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
+                    localizationService.SetLanguage("ru");
+                    await AuthCommand(message, cancellationToken);
                     break;
                 case LangRoute.English:
-                    _localizationService.setLocale("en");
-                    await _baseCommand.Auth(_botClient, message, cancellationToken);
-                    await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
+                    localizationService.SetLanguage("en");
+                    await AuthCommand(message, cancellationToken);
                     break;
                 case AuthRoute.User:
-                    await _baseCommand.Subs(_botClient, message, cancellationToken);
+                    await _subsCommand.ExecuteAsync(message, cancellationToken);
                     await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
                     break;
                 case AccountRoute.SubsGroupCheck:
-                    await _baseCommand.Account(_botClient, message, cancellationToken);
-                    await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
+                    if(await SubscriptionUtilities.SubscriptionCheck(_botClient, message, "@walloneapp"))
+                    {
+                        await _accountCommand.ExecuteAsync(message, cancellationToken);
+                        await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
+                    }
                     break;
                 case AccountRoute.PopularImages:
                     break;
@@ -119,7 +132,11 @@ namespace Telegram.Wallone.Services
             }
         }
 
-
+        private async Task AuthCommand(Message? message, CancellationToken cancellationToken)
+        {
+            await _authorizationCommand.ExecuteAsync(message, cancellationToken);
+            await _botClient.DeleteMessageAsync(message.Chat.Id, message.MessageId, cancellationToken);
+        }
 
         private async Task BotOnInlineQueryReceived(InlineQuery inlineQuery, CancellationToken cancellationToken)
         {
