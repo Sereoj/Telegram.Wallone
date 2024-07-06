@@ -31,7 +31,7 @@ IHost host = Host.CreateDefaultBuilder(args)
                 });
         services.AddScoped<LocalizationService>();
         services.AddScoped<LangHelper>();
-        services.AddSingleton<CommandFactory>();
+        services.AddScoped<CommandFactory>();
         //services.AddScoped<BaseCommand>();
         services.AddScoped<UpdateHandler>();
         services.AddScoped<ReceiverService>();
