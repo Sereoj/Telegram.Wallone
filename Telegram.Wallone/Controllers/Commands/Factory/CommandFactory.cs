@@ -12,27 +12,27 @@ namespace Telegram.Wallone.Controllers.Commands.Factory
     public class CommandFactory
     {
         private readonly ITelegramBotClient _botClient;
-        private readonly LocalizationService localizationService;
-        private readonly LangHelper langHelper;
+        private readonly LocalizationService _localizationService;
+        private readonly LangHelper _langHelper;
 
         public CommandFactory(ITelegramBotClient botClient, LocalizationService localizationService, LangHelper langHelper)
         {
             _botClient = botClient;
-            this.localizationService = localizationService;
-            this.langHelper = langHelper;
+            _localizationService = localizationService;
+            _langHelper = langHelper;
         }
 
         public ICommand CreateCommand(string command)
         {
             return command switch
             {
-                "/start" => new StartCommand(_botClient, localizationService, langHelper),
-                "/auth" => new AuthorizationCommand(_botClient, localizationService, langHelper),
-                "/subs" => new SubscribeCommand(_botClient, localizationService, langHelper),
-                "/account" => new AccountCommand(_botClient, localizationService, langHelper),
-                "/events" => new EventCommand(_botClient, localizationService, langHelper),
-                "/lang" => new LangCommand(_botClient, localizationService, langHelper),
-                _ => new UsageCommand(_botClient, localizationService, langHelper)
+                "/start" => new StartCommand(_botClient, _localizationService, _langHelper),
+                "/auth" => new AuthorizationCommand(_botClient, _localizationService, _langHelper),
+                "/subs" => new SubscribeCommand(_botClient, _localizationService, _langHelper),
+                "/account" => new AccountCommand(_botClient, _localizationService, _langHelper),
+                "/events" => new EventCommand(_botClient, _localizationService, _langHelper),
+                "/lang" => new LangCommand(_botClient, _localizationService, _langHelper),
+                _ => new UsageCommand(_botClient, _localizationService, _langHelper)
             };
         }
     }
